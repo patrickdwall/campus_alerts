@@ -1,0 +1,76 @@
+.front {
+
+}
+
+.not-front {
+
+}
+
+.campus-banner-alert {
+  margin-top:60px; // the main menu is position fixed and has 60px height
+  position: relative;
+  z-index:100;
+
+  .campus-alert-wrapper {
+    content: '';
+    display: block;
+    padding-top: 36px;
+
+    &.campus-alert-level-alert {
+      background-color: #CB5167;
+    }
+    &.campus-alert-level-status,
+    &.campus-alert-level-warning {
+      background: url('images/bkg-campus-alert-repeat.png') repeat scroll 0 0 transparent;
+    }
+
+    .campus-alert-inner {
+      max-width: 980px;
+      margin: auto;
+      display: block;
+      padding: 0 4% 0;
+    }
+  }
+
+  p,
+  div {
+    display: inline;
+  }
+
+  .attention {
+    color: #FDDE00;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+}
+
+.campus-page-alert {
+  background: none #FFF;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10000;
+
+  .close {
+    cursor: pointer;
+    float: right;
+  }
+}
+
+.campus-page-alert-static {
+  position: static;
+}
+
+body.campus-alert-active {
+  .footer-wrapper,
+  .bottom-wrapper,
+  .title-wrapper {
+    display: none;
+  }
+
+  #content > ul.tabs {
+    display: none;
+  }
+}

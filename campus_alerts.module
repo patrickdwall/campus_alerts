@@ -1,0 +1,137 @@
+<?php
+/**
+ * @file
+ * Campus Alerts module.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function campus_alerts_menu() {
+
+  $items['admin/config/content/campus-alerts'] = array(
+    'title' => 'Campus Alerts',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('campus_alerts_settings_form'),
+    'access arguments' => array('administer campus alerts'),
+    'file' => 'campus_alerts.admin.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['ajax/campus-alerts'] = array(
+    'title' => 'Campus Alerts',
+    'page callback' => 'campus_alerts_callback',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function campus_alerts_permission() {
+  return array(
+    'administer campus alerts' => array(
+      'title' => t('Administer Campus Alerts'),
+      'description' => t('Settings and invoke global campus alert.'),
+    ),
+  );
+}
+
+/**
+ * AJAX Callback: Campus Alerts
+ */
+function campus_alerts_callback($type = 'banner') {
+  global $conf;
+
+  // Disable outputs.
+  $conf['xhprof_enabled'] = 0;
+  $conf['show_memcache_statistics'] = 0;
+
+  $output = 'ok';
+  switch($type) {
+    default:
+    case 'banner':
+      if (variable_get('campus_alerts_banner_enabled', NULL)) {
+        $var = variable_get('campus_alerts_banner_text', array('value' => '', 'format' => 'full_html'));
+        if (!empty($var['value'])) {
+          $class = drupal_html_class('campus-alert-level-' . variable_get('campus_alerts_banner_level', 'status'));
+          $output = "<div class=\"campus-alert-wrapper $class\">";
+          $output .= '<div class="campus-alert-inner">';
+          $output .= '<div class="attention">' . t('Attention:') . '</div> ' . check_markup($var['value'], $var['format']);
+          $output .= '</div></div>';
+        }
+      }
+      break;
+
+    case 'page':
+      if (variable_get('campus_alerts_page_enabled', NULL)) {
+        $var = variable_get('campus_alerts_page_text', array('value' => '', 'format' => 'full_html'));
+        if (!empty($var['value'])) {
+          $output .= '<div class="close">' . t('Close Alert') . '</div>';
+          $output .= '<div class="alert-headline">Attention: Campus Alert</div>';
+          $output .= '<div class="alert-text">' . check_markup($var['value'], $var['format']) . '</div>';
+          $date_year = format_date(time(), 'custom', 'Y');
+          $output .= '<div class="alert-footer">&#xA9; ' . $date_year . ' California State University, Long Beach</div>';
+        }
+      }
+      break;
+  }
+
+  print $output;
+}
+
+/**
+ * Helper function to determine if the alert is active.
+ */
+function _campus_alert_page_active() {
+  global $theme;
+
+  return variable_get('campus_alerts_page_enabled', NULL) && $theme == variable_get('theme_default');
+}
+
+/**
+ * Implements theme_preprocess_html().
+ */
+function campus_alerts_preprocess_html(&$variables) {
+
+  if (_campus_alert_page_active()) {
+    $variables['classes_array'][] = 'campus-alert-active';
+  }
+}
+
+/**
+ * Implements hook_page_alter().
+ */
+function campus_alerts_page_alter(&$page) {
+  global $theme;
+
+  if (_campus_alert_page_active()) {
+    unset(
+      $page['page_top'],
+      $page['page_bottom'],
+      $page['header'],
+      $page['navigation'],
+      $page['sidebar_first'],
+      $page['bottom'],
+      $page['footer'],
+      $page['content']['metatags'],
+      $page['highlighted']
+    );
+
+    $var = variable_get('campus_alerts_page_text', array('value' => '', 'format' => 'full_html'));
+    $output = '<div class="campus-page-alert campus-page-alert-static"><div class="alert-headline">Attention: Campus Alert</div>';
+    $output .= '<div class="alert-text">' . check_markup($var['value'], $var['format']) . '</div>';
+    $date_year = format_date(time(), 'custom', 'Y');
+    $output .= '<div class="alert-footer">&#xA9; ' . $date_year . ' California State University, Long Beach</div>';
+    $output .= '</div>';
+
+    $page['content'] = array(
+      '#markup' => $output,
+    );
+
+    //$page['#show_messages'] = FALSE;
+  }
+}

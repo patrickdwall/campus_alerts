@@ -1,0 +1,8 @@
+name = Campus Alerts
+core = 7.x
+package = CSULB
+features[features_api][] = api:2
+project path = sites/all/modules/custom
+
+stylesheets[all][] = campus_alerts.less
+scripts[] = campus_alerts.js
